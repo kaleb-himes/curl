@@ -104,10 +104,10 @@
 #endif /* POLARSSL_VERSION_NUMBER<0x01010000 */
 #endif /* USE_POLARSSL */
 
-#ifdef USE_CYASSL
-#undef OCSP_REQUEST  /* avoid cyassl/openssl/ssl.h clash with wincrypt.h */
-#undef OCSP_RESPONSE /* avoid cyassl/openssl/ssl.h clash with wincrypt.h */
-#include <cyassl/openssl/ssl.h>
+#ifdef USE_WOLFSSL
+#undef OCSP_REQUEST  /* avoid wolfssl/openssl/ssl.h clash with wincrypt.h */
+#undef OCSP_RESPONSE /* avoid wolfssl/openssl/ssl.h clash with wincrypt.h */
+#include <wolfssl/openssl/ssl.h>
 #endif
 
 #ifdef USE_NSS
@@ -290,11 +290,11 @@ struct ssl_connect_data {
   rsa_context rsa;
   ssl_connect_state connecting_state;
 #endif /* USE_POLARSSL */
-#ifdef USE_CYASSL
+#ifdef USE_WOLFSSL
   SSL_CTX* ctx;
   SSL*     handle;
   ssl_connect_state connecting_state;
-#endif /* USE_CYASSL */
+#endif /* USE_WOLFSSL */
 #ifdef USE_NSS
   PRFileDesc *handle;
   char *client_nickname;

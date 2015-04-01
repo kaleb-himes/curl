@@ -752,8 +752,8 @@
 /* to enable SSPI support */
 /* #undef USE_WINDOWS_SSPI */
 
-/* Define to 1 if using yaSSL in OpenSSL compatibility mode. */
-/* #undef USE_YASSLEMUL */
+/* Define to 1 if using wolfSSL in OpenSSL compatibility mode. */
+/* #undef USE_WOLFSSLEMUL */
 
 /* Version number of package */
 /*#define VERSION "7.18.2-CVS"*/

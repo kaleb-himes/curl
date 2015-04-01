@@ -127,8 +127,8 @@ Unix
      To build with GnuTLS for SSL/TLS, use both --without-ssl and
      --with-gnutls.
 
-     To build with Cyassl for SSL/TLS, use both --without-ssl and
-     --with-cyassl.
+     To build with wolfssl for SSL/TLS, use both --without-ssl and
+     --with-wolfssl.
 
      To build with NSS for SSL/TLS, use both --without-ssl and --with-nss.
 
@@ -1097,7 +1097,7 @@ NSS          http://www.mozilla.org/projects/security/pki/nss/
 OpenLDAP     http://www.openldap.org/
 OpenSSL      http://www.openssl.org/
 PolarSSL     http://polarssl.org/
-yassl        http://www.yassl.com/
+wolfssl        http://www.wolfssl.com/
 Zlib         http://www.zlib.net/
 
 MingW        http://www.mingw.org/

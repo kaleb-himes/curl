@@ -890,8 +890,8 @@
 /* to enable SSPI support */
 /* #undef USE_WINDOWS_SSPI */
 
-/* Define to 1 if using yaSSL in OpenSSL compatibility mode. */
-/* #undef USE_YASSLEMUL */
+/* Define to 1 if using wolfSSL in OpenSSL compatibility mode. */
+/* #undef USE_WOLFSSLEMUL */
 
 /* Define to avoid automatic inclusion of winsock.h */
 /* #undef WIN32_LEAN_AND_MEAN */

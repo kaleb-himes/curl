@@ -21,14 +21,14 @@
  ***************************************************************************/
 
 /*
- * Source file for all CyaSSL-specific code for the TLS/SSL layer. No code
+ * Source file for all wolfSSL-specific code for the TLS/SSL layer. No code
  * but vtls.c should ever call or use these functions.
  *
  */
 
 #include "curl_setup.h"
 
-#ifdef USE_CYASSL
+#ifdef USE_WOLFSSL
 
 #ifdef HAVE_LIMITS_H
 #include <limits.h>
@@ -37,7 +37,7 @@
 #include "urldata.h"
 #include "sendf.h"
 #include "inet_pton.h"
-#include "cyassl.h"
+#include "wolfssl.h"
 #include "vtls.h"
 #include "parsedate.h"
 #include "connect.h" /* for the connect timeout */
@@ -45,21 +45,21 @@
 #include "rawstr.h"
 #include "curl_printf.h"
 
-#include <cyassl/ssl.h>
-#include <cyassl/version.h>
-#ifdef HAVE_CYASSL_ERROR_SSL_H
-#include <cyassl/error-ssl.h>
+#include <wolfssl/ssl.h>
+#include <wolfssl/version.h>
+#ifdef HAVE_WOLFSSL_ERROR_SSL_H
+#include <wolfssl/error-ssl.h>
 #else
-#include <cyassl/error.h>
+#include <wolfssl/error.h>
 #endif
-#include <cyassl/ctaocrypt/random.h>
+#include <wolfssl/ctaocrypt/random.h>
 
 /* The last #include files should be: */
 #include "curl_memory.h"
 #include "memdebug.h"
 
-static Curl_recv cyassl_recv;
-static Curl_send cyassl_send;
+static Curl_recv wolfssl_recv;
+static Curl_send wolfssl_send;
 
 
 static int do_file_type(const char *type)
@@ -78,7 +78,7 @@ static int do_file_type(const char *type)
  * layer and do all necessary magic.
  */
 static CURLcode
-cyassl_connect_step1(struct connectdata *conn,
+wolfssl_connect_step1(struct connectdata *conn,
                      int sockindex)
 {
   struct SessionHandle *data = conn->data;
@@ -94,11 +94,11 @@ cyassl_connect_step1(struct connectdata *conn,
   switch(data->set.ssl.version) {
   case CURL_SSLVERSION_DEFAULT:
   case CURL_SSLVERSION_TLSv1:
-#if LIBCYASSL_VERSION_HEX >= 0x03003000 /* 3.3.0 */
+#if LIBWOLFSSL_VERSION_HEX >= 0x03003000 /* 3.3.0 */
     /* the minimum version is set later after the SSL object is created */
     req_method = SSLv23_client_method();
 #else
-    infof(data, "CyaSSL <3.3.0 cannot be configured to use TLS 1.0-1.2, "
+    infof(data, "wolfSSL <3.3.0 cannot be configured to use TLS 1.0-1.2, "
           "TLS 1.0 is used exclusively\n");
     req_method = TLSv1_client_method();
 #endif
@@ -116,7 +116,7 @@ cyassl_connect_step1(struct connectdata *conn,
     req_method = SSLv3_client_method();
     break;
   case CURL_SSLVERSION_SSLv2:
-    failf(data, "CyaSSL does not support SSLv2");
+    failf(data, "wolfSSL does not support SSLv2");
     return CURLE_SSL_CONNECT_ERROR;
   default:
     failf(data, "Unrecognized parameter passed via CURLOPT_SSLVERSION");
@@ -213,7 +213,7 @@ cyassl_connect_step1(struct connectdata *conn,
   }
 #ifdef NO_FILESYSTEM
   else if(data->set.ssl.verifypeer) {
-    failf(data, "SSL: Certificates couldn't be loaded because CyaSSL was built"
+    failf(data, "SSL: Certificates couldn't be loaded because wolfSSL was built"
           " with \"no filesystem\". Either disable peer verification"
           " (insecure) or if you are building an application with libcurl you"
           " can load certificates via CURLOPT_SSL_CTX_FUNCTION.");
@@ -233,11 +233,11 @@ cyassl_connect_step1(struct connectdata *conn,
   switch(data->set.ssl.version) {
   case CURL_SSLVERSION_DEFAULT:
   case CURL_SSLVERSION_TLSv1:
-#if LIBCYASSL_VERSION_HEX >= 0x03003000 /* >= 3.3.0 */
+#if LIBWOLFSSL_VERSION_HEX >= 0x03003000 /* >= 3.3.0 */
     /* short circuit evaluation to find minimum supported TLS version */
-    if((CyaSSL_SetMinVersion(conssl->handle, CYASSL_TLSV1) != SSL_SUCCESS) &&
-       (CyaSSL_SetMinVersion(conssl->handle, CYASSL_TLSV1_1) != SSL_SUCCESS) &&
-       (CyaSSL_SetMinVersion(conssl->handle, CYASSL_TLSV1_2) != SSL_SUCCESS)) {
+    if((wolfSSL_SetMinVersion(conssl->handle, WOLFSSL_TLSV1) != SSL_SUCCESS) &&
+       (wolfSSL_SetMinVersion(conssl->handle, WOLFSSL_TLSV1_1) != SSL_SUCCESS) &&
+       (wolfSSL_SetMinVersion(conssl->handle, WOLFSSL_TLSV1_2) != SSL_SUCCESS)) {
       failf(data, "SSL: couldn't set the minimum protocol version");
       return CURLE_SSL_CONNECT_ERROR;
     }
@@ -269,22 +269,22 @@ cyassl_connect_step1(struct connectdata *conn,
 
 
 static CURLcode
-cyassl_connect_step2(struct connectdata *conn,
+wolfssl_connect_step2(struct connectdata *conn,
                      int sockindex)
 {
   int ret = -1;
   struct SessionHandle *data = conn->data;
   struct ssl_connect_data* conssl = &conn->ssl[sockindex];
 
-  infof(data, "CyaSSL: Connecting to %s:%d\n",
+  infof(data, "wolfSSL: Connecting to %s:%d\n",
         conn->host.name, conn->remote_port);
 
-  conn->recv[sockindex] = cyassl_recv;
-  conn->send[sockindex] = cyassl_send;
+  conn->recv[sockindex] = wolfssl_recv;
+  conn->send[sockindex] = wolfssl_send;
 
   /* Enable RFC2818 checks */
   if(data->set.ssl.verifyhost) {
-    ret = CyaSSL_check_domain_name(conssl->handle, conn->host.name);
+    ret = wolfSSL_check_domain_name(conssl->handle, conn->host.name);
     if(ret == SSL_FAILURE)
       return CURLE_OUT_OF_MEMORY;
   }
@@ -311,10 +311,10 @@ cyassl_connect_step2(struct connectdata *conn,
             conn->host.dispname);
       return CURLE_PEER_FAILED_VERIFICATION;
 #else
-      /* When the CyaSSL_check_domain_name() is used and you desire to continue
+      /* When the wolfSSL_check_domain_name() is used and you desire to continue
        * on a DOMAIN_NAME_MISMATCH, i.e. 'data->set.ssl.verifyhost == 0',
-       * CyaSSL version 2.4.0 will fail with an INCOMPLETE_DATA error. The only
-       * way to do this is currently to switch the CyaSSL_check_domain_name()
+       * wolfSSL version 2.4.0 will fail with an INCOMPLETE_DATA error. The only
+       * way to do this is currently to switch the wolfSSL_check_domain_name()
        * in and out based on the 'data->set.ssl.verifyhost' value. */
       if(data->set.ssl.verifyhost) {
         failf(data,
@@ -330,7 +330,7 @@ cyassl_connect_step2(struct connectdata *conn,
       }
 #endif
     }
-#if LIBCYASSL_VERSION_HEX >= 0x02007000 /* 2.7.0 */
+#if LIBWOLFSSL_VERSION_HEX >= 0x02007000 /* 2.7.0 */
     else if(ASN_NO_SIGNER_E == detail) {
       if(data->set.ssl.verifypeer) {
         failf(data, "\tCA signer not available for verification\n");
@@ -359,7 +359,7 @@ cyassl_connect_step2(struct connectdata *conn,
 
 
 static CURLcode
-cyassl_connect_step3(struct connectdata *conn,
+wolfssl_connect_step3(struct connectdata *conn,
                      int sockindex)
 {
   CURLcode result = CURLE_OK;
@@ -397,7 +397,7 @@ cyassl_connect_step3(struct connectdata *conn,
 }
 
 
-static ssize_t cyassl_send(struct connectdata *conn,
+static ssize_t wolfssl_send(struct connectdata *conn,
                            int sockindex,
                            const void *mem,
                            size_t len,
@@ -427,7 +427,7 @@ static ssize_t cyassl_send(struct connectdata *conn,
   return rc;
 }
 
-void Curl_cyassl_close(struct connectdata *conn, int sockindex)
+void Curl_wolfssl_close(struct connectdata *conn, int sockindex)
 {
   struct ssl_connect_data *conssl = &conn->ssl[sockindex];
 
@@ -442,7 +442,7 @@ void Curl_cyassl_close(struct connectdata *conn, int sockindex)
   }
 }
 
-static ssize_t cyassl_recv(struct connectdata *conn,
+static ssize_t wolfssl_recv(struct connectdata *conn,
                            int num,
                            char *buf,
                            size_t buffersize,
@@ -475,35 +475,35 @@ static ssize_t cyassl_recv(struct connectdata *conn,
 }
 
 
-void Curl_cyassl_session_free(void *ptr)
+void Curl_wolfssl_session_free(void *ptr)
 {
   (void)ptr;
-  /* CyaSSL reuses sessions on own, no free */
+  /* wolfSSL reuses sessions on own, no free */
 }
 
 
-size_t Curl_cyassl_version(char *buffer, size_t size)
+size_t Curl_wolfssl_version(char *buffer, size_t size)
 {
 #ifdef WOLFSSL_VERSION
   return snprintf(buffer, size, "wolfSSL/%s", WOLFSSL_VERSION);
-#elif defined(CYASSL_VERSION)
-  return snprintf(buffer, size, "CyaSSL/%s", CYASSL_VERSION);
+#elif defined(WOLFSSL_VERSION)
+  return snprintf(buffer, size, "wolfSSL/%s", WOLFSSL_VERSION);
 #else
-  return snprintf(buffer, size, "CyaSSL/%s", "<1.8.8");
+  return snprintf(buffer, size, "wolfSSL/%s", "<1.8.8");
 #endif
 }
 
 
-int Curl_cyassl_init(void)
+int Curl_wolfssl_init(void)
 {
-  if(CyaSSL_Init() == 0)
+  if(wolfSSL_Init() == 0)
     return 1;
 
   return -1;
 }
 
 
-bool Curl_cyassl_data_pending(const struct connectdata* conn, int connindex)
+bool Curl_wolfssl_data_pending(const struct connectdata* conn, int connindex)
 {
   if(conn->ssl[connindex].handle)   /* SSL is in use */
     return (0 != SSL_pending(conn->ssl[connindex].handle)) ? TRUE : FALSE;
@@ -516,7 +516,7 @@ bool Curl_cyassl_data_pending(const struct connectdata* conn, int connindex)
  * This function is called to shut down the SSL layer but keep the
  * socket open (CCC - Clear Command Channel)
  */
-int Curl_cyassl_shutdown(struct connectdata *conn, int sockindex)
+int Curl_wolfssl_shutdown(struct connectdata *conn, int sockindex)
 {
   int retval = 0;
   struct ssl_connect_data *connssl = &conn->ssl[sockindex];
@@ -530,7 +530,7 @@ int Curl_cyassl_shutdown(struct connectdata *conn, int sockindex)
 
 
 static CURLcode
-cyassl_connect_common(struct connectdata *conn,
+wolfssl_connect_common(struct connectdata *conn,
                       int sockindex,
                       bool nonblocking,
                       bool *done)
@@ -558,7 +558,7 @@ cyassl_connect_common(struct connectdata *conn,
       return CURLE_OPERATION_TIMEDOUT;
     }
 
-    result = cyassl_connect_step1(conn, sockindex);
+    result = wolfssl_connect_step1(conn, sockindex);
     if(result)
       return result;
   }
@@ -612,7 +612,7 @@ cyassl_connect_common(struct connectdata *conn,
      * ensuring that a client using select() or epoll() will always
      * have a valid fdset to wait on.
      */
-    result = cyassl_connect_step2(conn, sockindex);
+    result = wolfssl_connect_step2(conn, sockindex);
     if(result || (nonblocking &&
                   (ssl_connect_2 == connssl->connecting_state ||
                    ssl_connect_2_reading == connssl->connecting_state ||
@@ -621,15 +621,15 @@ cyassl_connect_common(struct connectdata *conn,
   } /* repeat step2 until all transactions are done. */
 
   if(ssl_connect_3 == connssl->connecting_state) {
-    result = cyassl_connect_step3(conn, sockindex);
+    result = wolfssl_connect_step3(conn, sockindex);
     if(result)
       return result;
   }
 
   if(ssl_connect_done == connssl->connecting_state) {
     connssl->state = ssl_connection_complete;
-    conn->recv[sockindex] = cyassl_recv;
-    conn->send[sockindex] = cyassl_send;
+    conn->recv[sockindex] = wolfssl_recv;
+    conn->send[sockindex] = wolfssl_send;
     *done = TRUE;
   }
   else
@@ -643,22 +643,22 @@ cyassl_connect_common(struct connectdata *conn,
 
 
 CURLcode
-Curl_cyassl_connect_nonblocking(struct connectdata *conn,
+Curl_wolfssl_connect_nonblocking(struct connectdata *conn,
                                 int sockindex,
                                 bool *done)
 {
-  return cyassl_connect_common(conn, sockindex, TRUE, done);
+  return wolfssl_connect_common(conn, sockindex, TRUE, done);
 }
 
 
 CURLcode
-Curl_cyassl_connect(struct connectdata *conn,
+Curl_wolfssl_connect(struct connectdata *conn,
                     int sockindex)
 {
   CURLcode result;
   bool done = FALSE;
 
-  result = cyassl_connect_common(conn, sockindex, FALSE, &done);
+  result = wolfssl_connect_common(conn, sockindex, FALSE, &done);
   if(result)
     return result;
 
@@ -667,7 +667,7 @@ Curl_cyassl_connect(struct connectdata *conn,
   return CURLE_OK;
 }
 
-int Curl_cyassl_random(struct SessionHandle *data,
+int Curl_wolfssl_random(struct SessionHandle *data,
                        unsigned char *entropy,
                        size_t length)
 {

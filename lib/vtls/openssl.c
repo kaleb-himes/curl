@@ -3109,11 +3109,11 @@ static ssize_t ossl_recv(struct connectdata *conn, /* connection data */
 
 size_t Curl_ossl_version(char *buffer, size_t size)
 {
-#ifdef YASSL_VERSION
-  /* yassl provides an OpenSSL API compatibility layer so it looks identical
+#ifdef WOLFSSL_VERSION
+  /* wolfssl provides an OpenSSL API compatibility layer so it looks identical
      to OpenSSL in all other aspects */
-  return snprintf(buffer, size, "yassl/%s", YASSL_VERSION);
-#else /* YASSL_VERSION */
+  return snprintf(buffer, size, "wolfssl/%s", WOLFSSL_VERSION);
+#else /* WOLFSSL_VERSION */
 #ifdef OPENSSL_IS_BORINGSSL
   return snprintf(buffer, size, "BoringSSL");
 #else /* OPENSSL_IS_BORINGSSL */
@@ -3184,7 +3184,7 @@ size_t Curl_ossl_version(char *buffer, size_t size)
 #endif /* OPENSSL_VERSION_NUMBER is less than 0.9.5 */
 
 #endif /* OPENSSL_IS_BORINGSSL */
-#endif /* YASSL_VERSION */
+#endif /* WOLFSSL_VERSION */
 }
 
 /* can be called with data == NULL */

@@ -62,18 +62,18 @@ GnuTLS
  I believe Debian is the first (only?) distro that provides libcurl/GnuTLS
  packages.
 
-yassl
+wolfssl
 
- libcurl can get also get built to use yassl for the TLS/SSL layer. yassl is a
- GPL[3] licensed library.
+ libcurl can get also get built to use wolfssl for the TLS/SSL layer. wolfssl 
+is a GPL[3] licensed library.
 
 
-GnuTLS vs OpenSSL vs yassl
+GnuTLS vs OpenSSL vs wolfssl
 
  While these three libraries offer similar features, they are not equal.
  libcurl does not (yet) offer a standardized stable ABI if you decide to
  switch from using libcurl-openssl to libcurl-gnutls or vice-versa. The GnuTLS
- and yassl support is very recent in libcurl and it has not been tested nor
+ and wolfssl support is very recent in libcurl and it has not been tested nor
  used very extensively, while the OpenSSL equivalent code has been used and
  thus matured since 1999.
 
@@ -92,7 +92,7 @@ GnuTLS vs OpenSSL vs yassl
    - provides crypto functions libcurl uses for NTLM
    - libcurl can do non-blocking connects with it in 7.15.4 and later
 
- yassl
+ wolfssl
    - GPL licensed
    - much untested and unproven in the real work by (lib)curl users so we don't
      know a lot about restrictions or benefits from using this

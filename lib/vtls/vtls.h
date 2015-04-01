@@ -29,7 +29,7 @@
 #include "gskit.h"          /* Global Secure ToolKit versions */
 #include "polarssl.h"       /* PolarSSL versions */
 #include "axtls.h"          /* axTLS versions */
-#include "cyassl.h"         /* CyaSSL versions */
+#include "wolfssl.h"         /* wolfSSL versions */
 #include "schannel.h"       /* Schannel SSPI version */
 #include "darwinssl.h"      /* SecureTransport (Darwin) version */
 

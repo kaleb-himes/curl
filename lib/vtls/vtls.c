@@ -33,7 +33,7 @@
    Curl_nss_ - prefix for NSS ones
    Curl_gskit_ - prefix for GSKit ones
    Curl_polarssl_ - prefix for PolarSSL ones
-   Curl_cyassl_ - prefix for CyaSSL ones
+   Curl_wolfssl_ - prefix for wolfSSL ones
    Curl_schannel_ - prefix for Schannel SSPI ones
    Curl_darwinssl_ - prefix for SecureTransport (Darwin) ones
 

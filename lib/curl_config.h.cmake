@@ -919,8 +919,8 @@
 /* to enable SSPI support */
 #cmakedefine USE_WINDOWS_SSPI 1
 
-/* Define to 1 if using yaSSL in OpenSSL compatibility mode. */
-#cmakedefine USE_YASSLEMUL 1
+/* Define to 1 if using wolfSSL in OpenSSL compatibility mode. */
+#cmakedefine USE_WOLFSSLEMUL 1
 
 /* Version number of package */
 #cmakedefine VERSION ${VERSION}
